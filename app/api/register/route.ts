@@ -15,6 +15,26 @@ export async function POST(req:NextRequest){
 
         const hashedPassword = await bcrypt.hash(password, 12);
 
+        const oldUser = await prisma.user.findUnique({
+            where: {
+                email
+            }
+        });
+
+        if(oldUser && !oldUser?.hashedPassword){
+            await prisma.user.update({
+                where: {
+                    email
+                },
+                data: {
+                    hashedPassword
+                }
+            });
+            return NextResponse.json({message: "Password updated successfully"}, {status: 200});
+        }else if (oldUser && oldUser.hashedPassword){
+            return NextResponse.json({message: "Email already registered"}, {status: 409});
+        }
+
         const user = await prisma.user.create({
             data: {
                 name,
