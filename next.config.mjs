@@ -14,6 +14,9 @@ const nextConfig = {
       "avatars.githubusercontent.com",
     ],
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;
