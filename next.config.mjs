@@ -9,7 +9,7 @@ const nextConfig = {
   images: {
     domains: [
       "lh3.googleusercontent.com",
-      "ik.imagekit.com",
+      "ik.imagekit.io",
       "res.cloudinary.com",
       "avatars.githubusercontent.com",
     ],
