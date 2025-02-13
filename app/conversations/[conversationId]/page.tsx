@@ -14,11 +14,13 @@ const ConversationId = async ({ params }: { params: IParams }) => {
   const messages = await getMessages(params.conversationId);
 
   if (!conversation) {
-    <div className="lg:pl-80 h-full">
-      <div className="h-full flex flex-col">
-        <EmptyState />
+    return (
+      <div className="lg:pl-80 h-full">
+        <div className="h-full flex flex-col">
+          <EmptyState />
+        </div>
       </div>
-    </div>;
+    );
   }
 
   return (
