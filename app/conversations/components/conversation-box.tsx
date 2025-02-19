@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import Avatar from "@/app/_components/avatar";
 import { format } from "date-fns";
+import AvatarGroup from "@/app/_components/AvatarGroup";
 
 interface ConversationBoxProps {
   data: FullConversationType;
@@ -61,7 +62,11 @@ const ConversationBox = ({ data, selected }: ConversationBoxProps) => {
         selected ? "bg-neutral-100" : "bg-white"
       )}
     >
-      <Avatar user={otherUser} />
+      {data?.isGroup ? (
+        <AvatarGroup users={data?.users} />
+      ) : (
+        <Avatar user={otherUser} />
+      )}
       <div className="min-w-0 flex-1">
         <div className="focus:outline-none">
           <div className="flex justify-between items-center mb-1">
