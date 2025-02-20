@@ -4,11 +4,14 @@ import useConversation from "@/hooks/useConversation";
 import { FullConversationType } from "@/types";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { MdOutlineGroupAdd } from "react-icons/md";
 import ConversationBox from "./conversation-box";
 import { User } from "@prisma/client";
 import GroupChatModal from "./GroupChatModal";
+import { useSession } from "next-auth/react";
+import { pusherClient } from "@/libs/pusher";
+import { find } from "lodash";
 
 interface ConversationListProps {
   initialItems: FullConversationType[];
@@ -16,12 +19,68 @@ interface ConversationListProps {
 }
 
 const ConversationList = ({ initialItems, users }: ConversationListProps) => {
+  const session = useSession();
   const [items, setItems] = useState(initialItems);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { conversationId, isOpen } = useConversation();
 
   const router = useRouter();
 
-  const { conversationId, isOpen } = useConversation();
+  const pusherKey = useMemo(() => {
+    return session?.data?.user?.email;
+  }, [session?.data?.user?.email]);
+
+  useEffect(() => {
+    if (!pusherKey) {
+      return;
+    }
+
+    const newHandler = (conversation: FullConversationType) => {
+      setItems((prev) => {
+        if (find(prev, { id: conversation.id })) {
+          return prev;
+        }
+        return [...prev, conversation];
+      });
+    };
+
+    const updateHandler = (conversation: FullConversationType) => {
+      setItems((prev) =>
+        prev.map((prevConversation) => {
+          if (prevConversation.id === conversation.id) {
+            return {
+              ...prevConversation,
+              messages: conversation.messages,
+            };
+          }
+          return prevConversation;
+        })
+      );
+    };
+
+    const deleteHandler = (conversation: FullConversationType) => {
+      if (conversationId === conversation.id) {
+        router.push("/conversations");
+      }
+      setItems((prev) =>
+        prev.filter(
+          (prevConversation) => prevConversation.id !== conversation.id
+        )
+      );
+    };
+
+    pusherClient.subscribe(pusherKey);
+    pusherClient.bind("conversation:new", newHandler);
+    pusherClient.bind("conversation:update", updateHandler);
+    pusherClient.bind("conversation:remove", deleteHandler);
+
+    return () => {
+      pusherClient.unsubscribe(pusherKey);
+      pusherClient.unbind("conversation:new", newHandler);
+      pusherClient.unbind("conversation:update", updateHandler);
+      pusherClient.unbind("conversation:remove", deleteHandler);
+    };
+  }, [pusherKey]);
 
   return (
     <>
