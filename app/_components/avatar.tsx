@@ -6,7 +6,10 @@ import React from "react";
 
 const Avatar = ({ user }: { user?: User }) => {
   const { members } = userActiveList();
-  const isActive = members.indexOf(user.email) !== -1;
+  let isActive = false;
+  if (user?.email) {
+    isActive = members.indexOf(user.email) !== -1;
+  }
 
   return (
     <div className="relative">
