@@ -1,12 +1,16 @@
 import getCurrentUser from "@/actions/getCurrentUser";
 import { NextResponse } from "next/server";
 import prisma from "@/libs/prismadb";
-import { NextApiRequest } from "next";
 
-export async function POST(request: NextApiRequest) {
+interface UpdateUserRequest {
+  name?: string;
+  image?: string;
+}
+
+export async function POST(request: Request) {
   try {
     const currentUser = await getCurrentUser();
-    const body = request.body;
+    const body: UpdateUserRequest = await request.json();
 
     const { name, image } = body;
 
